@@ -9,6 +9,7 @@
         <div class="ii-text" v-show="loading==2">正在加载...</div>
         <div class="ii-text" v-show="loading==3">图片出错了!</div>
       </div>
+      <slot></slot>
     </div>
   </transition>
 </template>
