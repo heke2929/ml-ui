@@ -1,6 +1,6 @@
 {
-  "name": "ml-ui",
-  "version": "1.2.9",
+  "name": "ml-ui-x",
+  "version": "1.0.1",
   "description": "ml-ui，一套为开发者、设计师和产品经理准备的基于 Vue 2 的移动端组件库",
   "main": "ml-ui.js",
   "repository": {

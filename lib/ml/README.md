@@ -1,4 +1,4 @@
-# ml-ui 
+# ml-ui-x
 
 ## 安装
 ```npm
@@ -9,7 +9,7 @@ npm install ml-ui-x -S
 ```js
 import Vue from 'vue'
 import MlUi from 'ml-ui-x'
-import 'ml-ui/styles/index.css'
+import 'ml-ui-x/styles/index.css'
 
 Vue.use(MlUi)
 ```

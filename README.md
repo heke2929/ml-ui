@@ -1,4 +1,4 @@
-# ml-ui 
+# ml-ui-x
 
 基于 Vue 2.0 的 Mobile 组件库 ml-ui
 
@@ -20,7 +20,7 @@ npm install ml-ui-x -S
 ```js
 import Vue from 'vue'
 import MlUi from 'ml-ui-x'
-import 'ml-ui/styles/index.css'
+import 'ml-ui-x/styles/index.css'
 
 Vue.use(MlUi)
 ```
