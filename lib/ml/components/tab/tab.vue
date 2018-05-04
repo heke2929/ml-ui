@@ -61,8 +61,8 @@
         newPage.style.webkitTransform = `translate3d(${than * $elWidth}px,0,0)`
         newPage.style.display = 'block'
         setTimeout(() => {
-          this.translate(currentPage, -than * $elWidth, 300)
-          this.translate(newPage, 0, 300, () => {
+          this.setTranslate(currentPage, -than * $elWidth, 300)
+          this.setTranslate(newPage, 0, 300, () => {
             newPage.style.display = ''
             removeClass(currentPage, 'tab-active')
             addClass(newPage, 'tab-active')
@@ -94,15 +94,16 @@
         let ALPHA = 0.88
         const animationLoop = () => {
           ALPHA *= (0.98)
-          if (Math.abs(initOffset - offset) < 1.2) {
+          if (Math.abs(initOffset - offset) < 2) {
+            this.log(Math.abs(initOffset - offset))
             this.animating = false
             $el.style.webkitTransform = ''
             $elNext.style.webkitTransform = ''
           } else {
-            initOffset = ALPHA * initOffset + (1.0 - ALPHA) * offset
+            initOffset = Math.round(ALPHA * initOffset + (1 - ALPHA) * offset)
             $el.style.webkitTransform = `translate3d(${initOffset}px,0,0)`
             $elNext.style.webkitTransform = `translate3d(${initOffset - offset}px,0,0)`
-            if (Math.abs(initOffset - offset) < 1.2 && callback) callback()
+            if (Math.abs(initOffset - offset) < 2 && callback) callback()
             animationFrame(animationLoop)
           }
         }
@@ -111,7 +112,7 @@
       /**
        * 动画
        */
-      translate($el, offset, speed, callback) {
+      setTranslate($el, offset, speed, callback) {
         if (speed) {
           this.animating = true
           $el.style.webkitTransition = '-webkit-transform ' + speed + 'ms ease-in-out'
@@ -121,7 +122,7 @@
           const transitionEndCallback = () => {
             $el.style.webkitTransition = ''
             $el.style.webkitTransform = ''
-            if (callback) callback()
+            callback && callback()
             this.animating = false
           }
           setTimeout(transitionEndCallback, speed + 30)
@@ -144,9 +145,9 @@
           prevPage = pages[prevIndex]
           nextPage = pages[nextIndex]
           prevPage.style.display = 'block'
-          this.translate(prevPage, -$elWidth)
+          this.setTranslate(prevPage, -$elWidth)
           nextPage.style.display = 'block'
-          this.translate(nextPage, $elWidth)
+          this.setTranslate(nextPage, $elWidth)
         }
         let newIndex = null
         if (towards === 'next') newIndex = nextIndex
@@ -164,22 +165,22 @@
           if (distanceX) {
             this.continueTranslate(currentPage, offsetLeft, -$elWidth, callback, nextPage)
           } else {
-            this.translate(currentPage, -$elWidth, speed, callback)
-            this.translate(nextPage, 0, speed)
+            this.setTranslate(currentPage, -$elWidth, speed, callback)
+            this.setTranslate(nextPage, 0, speed)
           }
         } else if (towards === 'prev') {
           if (distanceX) {
             this.continueTranslate(currentPage, offsetLeft, $elWidth, callback, prevPage)
           } else {
-            this.translate(currentPage, $elWidth, speed, callback)
-            this.translate(prevPage, 0, speed)
+            this.setTranslate(currentPage, $elWidth, speed, callback)
+            this.setTranslate(prevPage, 0, speed)
           }
         } else { // 滑动距离<5的回滚
-          this.translate(currentPage, 0, speed, callback)
+          this.setTranslate(currentPage, 0, speed, callback)
           if (offsetLeft > 0) {
-            this.translate(prevPage, $elWidth * -1, speed)
+            this.setTranslate(prevPage, $elWidth * -1, speed)
           } else {
-            this.translate(nextPage, $elWidth, speed)
+            this.setTranslate(nextPage, $elWidth, speed)
           }
         }
       },
@@ -220,16 +221,16 @@
         dragObject.result = Math.abs(touch.pageY - dragObject.startTop) >= 1.73 * maxX
         if (dragObject.result) return
         this.slipLeft = this.slipLeft + offsetLeft
-        this.translate(dragObject.prevPage, this.slipLeft - dragObject.$elWidth)
-        this.translate(dragObject.dragPage, this.slipLeft)
-        this.translate(dragObject.nextPage, this.slipLeft + dragObject.$elWidth)
+        this.setTranslate(dragObject.prevPage, this.slipLeft - dragObject.$elWidth)
+        this.setTranslate(dragObject.dragPage, this.slipLeft)
+        this.setTranslate(dragObject.nextPage, this.slipLeft + dragObject.$elWidth)
       },
       /**
        * 触发结束
        */
       touchEnd() {
         const dragObject = this.dragObject
-        if (!dragObject.startLeft || this.pages.length < 2) return
+        if (!dragObject.currentLeft || this.pages.length < 2) return
         let towards = null
         const offsetLeft = this.slipLeft
         const $elWidth = dragObject.$elWidth

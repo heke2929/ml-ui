@@ -21,15 +21,15 @@
           </div>
           <ul class="side-nav">
             <li class="nav-item">
-              <a href="javascript:;" changelog>更新日志</a>
+              <a href="javascript:;">更新日志</a>
             </li>
-            <li class="nav-item" v-for="side in sideJson">
+            <li class="nav-item" v-for="side in sideJson" :key="side.label">
               <a href="javascript:;" :class="{'active':side.link==$route.path}"
                  v-if="side.link" @click="goToComp(side.link)">安装</a>
               <div class="nav-group" v-if="side.children&&side.children.length>0">
                 <div class="nav-group-title">{{side.label}}</div>
                 <ul class="pure-menu-list">
-                  <li class="nav-item" v-for="component in side.children">
+                  <li class="nav-item" v-for="component in side.children" :key="component.label">
                     <a href="javascript:;" :class="{'active':component.link==$route.path}"
                        @click="goToComp(component.link)">
                       {{component.label}}
@@ -47,7 +47,7 @@
         </div>
         <div class="ml-phone">
           <div class="phone-top"></div>
-          <iframe class="phone-content" :src="`#/demo${$route.meta.demoLink||''}`"></iframe>
+          <iframe class="phone-content" :src="`${host}/#/demo${$route.meta.demoLink||''}`"></iframe>
         </div>
       </div>
     </div>
@@ -57,8 +57,12 @@
   export default {
     data() {
       return {
-        sideJson: this.$store.state.sidebar
+        sideJson: this.$store.state.sidebar,
+        host: window.location.host,
       }
+    },
+    created() {
+      if (process.env.NODE_ENV === 'development') this.host = `//${this.host}`
     },
     methods: {
       /**
@@ -69,10 +73,5 @@
         if (link) this.$router.push(link)
       }
     },
-    created() {
-      if (/Android|webOS|iPhone|iPad|BlackBerry/i.test(navigator.userAgent)) {
-        this.$router.replace('/demo/index')
-      }
-    }
   }
 </script>

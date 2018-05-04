@@ -4,7 +4,8 @@
       <slot></slot>
     </div>
     <div class="ml-slide-dots" v-show="showDots">
-      <div class="ml-slide-dot" v-for="(page, $index) in pages" :class="{ 'dot-active': $index == index }"></div>
+      <div class="ml-slide-dot" v-for="(page, $index) in pages" :class="{ 'dot-active': $index == index }"
+           :key="$index"></div>
     </div>
   </div>
 </template>
@@ -95,17 +96,15 @@
         this.animating = true
         const animationLoop = () => {
           ALPHA = ALPHA * 0.98
-          if (Math.abs(initOffset - offset) < 1) {
+          if (Math.abs(initOffset - offset) < 2) {
             this.animating = false
             $el.style.webkitTransform = ''
             $elNext.style.webkitTransform = ''
           } else {
-            initOffset = ALPHA * initOffset + (1.0 - ALPHA) * offset
+            initOffset = Math.round(ALPHA * initOffset + (1 - ALPHA) * offset)
             $el.style.webkitTransform = `translate3d(${initOffset}px,0,0)`
             $elNext.style.webkitTransform = `translate3d(${initOffset - offset}px,0,0)`
-            if (Math.abs(initOffset - offset) < 1) {
-              if (callback) callback.apply({}, arguments)
-            }
+            if (Math.abs(initOffset - offset) < 2 && callback) callback()
             animationFrame(animationLoop)
           }
         }
@@ -114,7 +113,7 @@
       /**
        * 动画
        */
-      translate($el, offset, speed, callback) {
+      setTranslate($el, offset, speed, callback) {
         if (speed) {
           this.animating = true
           $el.style.webkitTransition = '-webkit-transform ' + speed + 'ms ease-in-out'
@@ -125,7 +124,7 @@
             this.animating = false
             $el.style.webkitTransition = ''
             $el.style.webkitTransform = ''
-            if (callback) callback.apply({}, arguments)
+            callback && callback()
           }
           setTimeout(transitionEndCallback, speed + 30)
         } else {
@@ -146,17 +145,15 @@
           currentPage = pages[index]
           prevPage = pages[prevIndex]
           nextPage = pages[nextIndex]
-          prevPage.style.display = 'block'
-          this.translate(prevPage, -$elWidth)
-          nextPage.style.display = 'block'
-          this.translate(nextPage, $elWidth)
+          this.setTranslate(prevPage, -$elWidth)
+          this.setTranslate(nextPage, $elWidth)
+          prevPage.style.display = nextPage.style.display = 'block'
         }
         let newIndex = null
         if (towards === 'next') newIndex = nextIndex
         if (towards === 'prev') newIndex = prevIndex
         const callback = () => {
-          prevPage.style.display = ''
-          nextPage.style.display = ''
+          prevPage.style.display = nextPage.style.display = ''
           if (newIndex !== null) {
             removeClass(currentPage, 'slide-active')
             addClass(pages[newIndex], 'slide-active')
@@ -167,22 +164,22 @@
           if (distanceX) {
             this.continueTranslate(currentPage, offsetLeft, -$elWidth, callback, nextPage)
           } else {
-            this.translate(currentPage, -$elWidth, speed, callback)
-            this.translate(nextPage, 0, speed)
+            this.setTranslate(currentPage, -$elWidth, speed, callback)
+            this.setTranslate(nextPage, 0, speed)
           }
         } else if (towards === 'prev') {
           if (distanceX) {
             this.continueTranslate(currentPage, offsetLeft, $elWidth, callback, prevPage)
           } else {
-            this.translate(currentPage, $elWidth, speed, callback)
-            this.translate(prevPage, 0, speed)
+            this.setTranslate(currentPage, $elWidth, speed, callback)
+            this.setTranslate(prevPage, 0, speed)
           }
         } else { // 滑动距离<5的回滚
-          this.translate(currentPage, 0, speed, callback)
+          this.setTranslate(currentPage, 0, speed, callback)
           if (offsetLeft > 0) {
-            this.translate(prevPage, -$elWidth, speed)
+            this.setTranslate(prevPage, -$elWidth, speed)
           } else {
-            this.translate(nextPage, $elWidth, speed)
+            this.setTranslate(nextPage, $elWidth, speed)
           }
         }
       },
@@ -199,9 +196,9 @@
         dragObject.$elWidth = $el.offsetWidth
         const prevIndex = this.index - 1 < 0 ? this.pages.length - 1 : this.index - 1
         const nextIndex = this.index + 1 > this.pages.length - 1 ? 0 : this.index + 1
-        dragObject.prevPage = this.$children[prevIndex].$el
-        dragObject.dragPage = this.$children[this.index].$el
-        dragObject.nextPage = this.$children[nextIndex].$el
+        dragObject.prevPage = this.pages[prevIndex]
+        dragObject.dragPage = this.pages[this.index]
+        dragObject.nextPage = this.pages[nextIndex]
         dragObject.prevPage.style.display = 'block'
         dragObject.nextPage.style.display = 'block'
       },
@@ -224,15 +221,15 @@
         }
         this.animating = true
         e.preventDefault()
-        this.translate(dragObject.dragPage, offsetLeft)
+        this.setTranslate(dragObject.dragPage, offsetLeft)
         if (dragObject.prevPage !== dragObject.nextPage) {
-          this.translate(dragObject.prevPage, offsetLeft - dragObject.$elWidth)
-          this.translate(dragObject.nextPage, offsetLeft + dragObject.$elWidth)
+          this.setTranslate(dragObject.prevPage, offsetLeft - dragObject.$elWidth)
+          this.setTranslate(dragObject.nextPage, offsetLeft + dragObject.$elWidth)
         } else {
           if (this.index === 1) {
-            this.translate(dragObject.nextPage, offsetLeft - dragObject.$elWidth)
+            this.setTranslate(dragObject.nextPage, offsetLeft - dragObject.$elWidth)
           } else {
-            this.translate(dragObject.nextPage, offsetLeft + dragObject.$elWidth)
+            this.setTranslate(dragObject.nextPage, offsetLeft + dragObject.$elWidth)
           }
         }
       },

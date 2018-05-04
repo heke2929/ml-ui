@@ -32,7 +32,7 @@
       /**
        * 动画
        */
-      translate($el, offset, speed) {
+      setTranslate($el, offset, speed) {
         if (speed) {
           this.animating = true
           $el.style.webkitTransition = '-webkit-transform ' + speed + 'ms ease-in-out'
@@ -58,19 +58,19 @@
         let ALPHA = 0.88
         this.animating = true
         const animationLoop = () => {
-          if (Math.abs(currentLeft - offset) < 1) {
+          if (Math.abs(currentLeft - offset) < 2) {
             this.animating = false
             currentLeft = offset
             $el.style.webkitTransform = `translate3d(${currentLeft}px,0,0)`
             callback && callback()
           } else {
-            ALPHA = ALPHA * 0.99
+            ALPHA = ALPHA * 0.98
             if (offset === 0) {
-              currentLeft = ALPHA * currentLeft - (1.0 - ALPHA) * currentLeft
+              currentLeft = ALPHA * currentLeft - (1 - ALPHA) * currentLeft
             } else {
-              currentLeft = ALPHA * currentLeft + (1.0 - ALPHA) * (offset)
+              currentLeft = ALPHA * currentLeft + (1 - ALPHA) * (offset)
             }
-            $el.style.webkitTransform = `translate3d(${currentLeft}px,0,0)`
+            $el.style.webkitTransform = `translate3d(${Math.round(currentLeft)}px,0,0)`
             animationFrame(animationLoop)
           }
         }
@@ -96,7 +96,7 @@
         const pageX = touch.pageX
         if (!dragObject.startLeft) return
         dragObject.oldValue = dragObject.currentLeft || pageX
-        if (!this.animating && Math.abs(pageX - dragObject.startLeft) < 15) return
+        if (!this.animating && Math.abs(pageX - dragObject.startLeft) < 18) return
         dragObject.currentLeft = pageX
         const offsetLeft = pageX - dragObject.oldValue
         this.animating = true
@@ -107,7 +107,7 @@
         if (currentLeft >= 0) currentLeft = 0
         if (currentLeft <= -dragObject.maxWidth) currentLeft = -dragObject.maxWidth
         this.slipLeft = currentLeft
-        this.translate(this.$refs.warpSlip, currentLeft)
+        this.setTranslate(this.$refs.warpSlip, currentLeft)
       },
       /**
        * 触发结束
@@ -141,7 +141,7 @@
         if (!checkTargetNode(e.target, this.$el)) {
           this.slipLeft = 0
           document.body.removeEventListener('touchstart', this.reduction, true)
-          this.translate(this.$refs.warpSlip, 0, 200)
+          this.setTranslate(this.$refs.warpSlip, 0, 200)
         }
       },
       /**
@@ -165,8 +165,10 @@
       }, false)
     },
     destroyed() {
-      if (this.selfClosing) document.body.removeEventListener('touchstart', this.reduction, true)
-      if (this.selfClosing) document.body.removeEventListener('touchstart', this.stopPro, true)
+      if (this.selfClosing) {
+        document.body.removeEventListener('touchstart', this.reduction, true)
+        document.body.removeEventListener('touchstart', this.stopPro, true)
+      }
     },
   }
 </script>
